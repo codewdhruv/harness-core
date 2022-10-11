@@ -511,9 +511,12 @@ if [[ "" != "$BACKGROUND_SCHEDULER_CLUSTERED" ]]; then
 fi
 
 if [[ "" != "$ENABLE_CRONS" ]]; then
-  export ENABLE_CRONS; yq -i '.enableIterators=env(ENABLE_CRONS)' $CONFIG_FILE
   export ENABLE_CRONS; yq -i '.backgroundScheduler.enabled=env(ENABLE_CRONS)' $CONFIG_FILE
   export ENABLE_CRONS; yq -i '.serviceScheduler.enabled=env(ENABLE_CRONS)' $CONFIG_FILE
+fi
+
+if [[ "" != "$ENABLE_ITERATORS" ]]; then
+  export ENABLE_ITERATORS; yq -i '.enableIterators=env(ENABLE_ITERATORS)' $CONFIG_FILE
 fi
 
 if [[ "" != "$ALLOW_TRIAL_REGISTRATION" ]]; then
@@ -785,10 +788,15 @@ fi
 
 if [[ "" != "$REDIS_SUBSCRIPTIONS_PER_CONNECTION" ]]; then
   export REDIS_SUBSCRIPTIONS_PER_CONNECTION; yq -i '.redisAtmosphereConfig.subscriptionsPerConnection=env(REDIS_SUBSCRIPTIONS_PER_CONNECTION)' $CONFIG_FILE
+  export REDIS_SUBSCRIPTIONS_PER_CONNECTION; yq -i '.singleServerConfig.subscriptionsPerConnection=env(REDIS_SUBSCRIPTIONS_PER_CONNECTION)' $REDISSON_CACHE_FILE
 fi
 
 if [[ "" != "$REDIS_SUBSCRIPTION_CONNECTION_POOL_SIZE" ]]; then
-  export REDIS_SUBSCRIPTION_CONNECTION_POOL_SIZE; yq -i '.redisAtmosphereConfig.subscriptionConnectionPoolSize=env(REDIS_SUBSCRIPTION_CONNECTION_POOL_SIZE)' $CONFIG_FILE
+  export REDIS_SUBSCRIPTION_CONNECTION_POOL_SIZE; yq -i '.singleServerConfig.subscriptionConnectionPoolSize=env(REDIS_SUBSCRIPTION_CONNECTION_POOL_SIZE)' $REDISSON_CACHE_FILE
+fi
+
+if [[ "" != "$REDIS_SUBSCRIPTION_CONNECTION_MINIMUM_IDLE_SIZE" ]]; then
+  export REDIS_SUBSCRIPTION_CONNECTION_MINIMUM_IDLE_SIZE; yq -i '.singleServerConfig.subscriptionConnectionMinimumIdleSize=env(REDIS_SUBSCRIPTION_CONNECTION_MINIMUM_IDLE_SIZE)' $REDISSON_CACHE_FILE
 fi
 
 if [[ "" != "$CACHE_NAMESPACE" ]]; then

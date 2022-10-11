@@ -54,6 +54,7 @@ import io.harness.mongo.MongoConfig;
 import io.harness.mongo.MongoPersistence;
 import io.harness.morphia.MorphiaRegistrar;
 import io.harness.ng.core.event.MessageListener;
+import io.harness.ngsettings.client.remote.NGSettingsClientModule;
 import io.harness.ngtriggers.outbox.TriggerOutboxEventHandler;
 import io.harness.opaclient.OpaClientModule;
 import io.harness.organization.OrganizationClientModule;
@@ -119,6 +120,8 @@ import io.harness.pms.pipeline.service.yamlschema.customstage.CustomStageYamlSch
 import io.harness.pms.pipeline.service.yamlschema.customstage.CustomStageYamlSchemaServiceImpl;
 import io.harness.pms.pipeline.service.yamlschema.featureflag.FeatureFlagYamlService;
 import io.harness.pms.pipeline.service.yamlschema.featureflag.FeatureFlagYamlServiceImpl;
+import io.harness.pms.pipeline.service.yamlschema.pipelinestage.PipelineStageYamlSchemaService;
+import io.harness.pms.pipeline.service.yamlschema.pipelinestage.PipelineStageYamlSchemaServiceImpl;
 import io.harness.pms.plan.creation.NodeTypeLookupService;
 import io.harness.pms.plan.creation.NodeTypeLookupServiceImpl;
 import io.harness.pms.plan.execution.PlanExecutionResource;
@@ -319,6 +322,8 @@ public class PipelineServiceModule extends AbstractModule {
         PIPELINE_SERVICE.getServiceId()));
     install(new UserGroupClientModule(configuration.getNgManagerServiceHttpClientConfig(),
         configuration.getNgManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
+    install(new NGSettingsClientModule(configuration.getNgManagerServiceHttpClientConfig(),
+        configuration.getNgManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
     install(new DelegateSelectionLogHttpClientModule(configuration.getManagerClientConfig(),
         configuration.getManagerServiceSecret(), PIPELINE_SERVICE.getServiceId()));
     install(new PipelineServiceEventsFrameworkModule(
@@ -362,6 +367,7 @@ public class PipelineServiceModule extends AbstractModule {
     bind(ShellScriptHelperService.class).to(ShellScriptHelperServiceImpl.class);
     bind(ApprovalYamlSchemaService.class).to(ApprovalYamlSchemaServiceImpl.class).in(Singleton.class);
     bind(CustomStageYamlSchemaService.class).to(CustomStageYamlSchemaServiceImpl.class).in(Singleton.class);
+    bind(PipelineStageYamlSchemaService.class).to(PipelineStageYamlSchemaServiceImpl.class).in(Singleton.class);
     bind(FeatureFlagYamlService.class).to(FeatureFlagYamlServiceImpl.class).in(Singleton.class);
     bind(PipelineEnforcementService.class).to(PipelineEnforcementServiceImpl.class).in(Singleton.class);
 
