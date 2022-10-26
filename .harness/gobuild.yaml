@@ -1,0 +1,110 @@
+pipeline:
+  name: go-build
+  identifier: gobuild
+  projectIdentifier: DhrubaCI
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: dhruba-account-connector
+        repoName: harness-core
+        build: <+input>
+  stages:
+    - stage:
+        name: go_build
+        identifier: go_build
+        type: CI
+        spec:
+          cloneCodebase: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: "build expression code "
+                  identifier: build_expression_code
+                  spec:
+                    shell: Sh
+                    command: |-
+                      touch bazel-credentials.bzl
+                      touch test-util.bzl
+                      echo "JFROG_USERNAME=\"foo\"" >> bazel-credentials.bzl
+                      echo "JFROG_PASSWORD=\"bar\"" >> bazel-credentials.bzl
+                      echo "DISTRIBUTE_TESTING_WORKER=0" >> test-util.bzl
+                      echo "DISTRIBUTE_TESTING_WORKERS=1" >> test-util.bzl
+                      echo "OPTIMIZED_PACKAGE_TESTS=0" >> test-util.bzl
+                      echo "Building golang expression service protobuf using bazel..."
+                      bazel build //960-expression-service/src/main/proto/... --javacopt='-XepDisableAllChecks'
+              - step:
+                  type: Run
+                  name: Building commons code
+                  identifier: Building_commons_code
+                  spec:
+                    shell: Sh
+                    command: |
+                      echo "Building golang commons code using bazel..."
+                      bazel build //commons/...
+              - step:
+                  type: Run
+                  name: Building product code
+                  identifier: Building_product_code
+                  spec:
+                    shell: Sh
+                    command: |-
+                      echo "Building golang product code using bazel..."
+                      bazel build //product/... --javacopt='-XepDisableAllChecks'
+                  when:
+                    stageStatus: Success
+                  failureStrategies: []
+              - step:
+                  type: Run
+                  name: Building gopath
+                  identifier: Building_gopath
+                  spec:
+                    shell: Sh
+                    command: |
+                      echo "Building gopath"
+                      bazel build :gopath --javacopt=' -XepDisableAllChecks'
+                  when:
+                    stageStatus: Success
+                  failureStrategies: []
+              - step:
+                  type: Run
+                  name: Testing commons
+                  identifier: Testing_commons
+                  spec:
+                    shell: Sh
+                    command: |2-
+                       echo "Testing golang product code using bazel..."
+                       bazel test --test_output=all //product/... --javacopt=' -XepDisableAllChecks'
+                  when:
+                    stageStatus: Success
+                  failureStrategies: []
+              - step:
+                  type: Run
+                  name: Coverage
+                  identifier: Coverage
+                  spec:
+                    shell: Sh
+                    command: |-
+                      export GOPATH=$(go env GOPATH)
+                      export PATH=$PATH:$GOPATH/bin
+                      echo $PATH
+                      echo $GOPATH
+                      echo "Adding gocovmerge package... "
+                      go install github.com/wadey/gocovmerge@latest
+                      tools/go/generate_coverage.sh func
+                  when:
+                    stageStatus: Success
+                  failureStrategies: []
+        variables:
+          - name: BUILD_PURPOSE
+            type: String
+            description: ""
+            value: RELEASE
